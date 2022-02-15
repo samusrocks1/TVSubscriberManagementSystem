@@ -4,19 +4,59 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class AddSubscriber {
-    static ArrayList<Subscriber> subscriber = new ArrayList<>();
+public class EditSubscriber {
+    private static ArrayList<Subscriber> subscribers = new ArrayList<>();
 
-    public static void subscriberWindow() {
-        subscriber.clear();
-        subscriber.addAll(FileRetrieval.readSubscriberFile());
-        JFrame subWindow = new JFrame("Add new subscriber");
+    public static void searchSubscriber() {
+        subscribers.clear();
+        subscribers.addAll(FileRetrieval.readSubscriberFile());
+        JFrame searchWindow = new JFrame("Search for subscriber");
+        searchWindow.setBounds(25, 25, 400, 600);
+        searchWindow.setLayout(new BorderLayout());
+        JPanel searchPanel = new JPanel();
+        searchWindow.add(searchPanel, BorderLayout.NORTH);
+        JLabel searchDescription = new JLabel("Name:");
+        searchPanel.add(searchDescription);
+        JTextField name = new JTextField(17);
+        searchPanel.add(name);
+        JButton search = new JButton("Search");
+        searchPanel.add(search);
+        searchWindow.setVisible(true);
+        JPanel results = new JPanel(new GridLayout(subscribers.size(), 2));
+        searchWindow.add(results, BorderLayout.CENTER);
+        search.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchName = name.getText();
+                results.removeAll();
+                ArrayList<Subscriber> searchResults = new ArrayList<>();
+                for (int x = 0; x < subscribers.size(); x++){
+                    if (subscribers.get(x).getFirstName().equalsIgnoreCase(searchName) || subscribers.get(x).getLastName().equalsIgnoreCase(searchName)) {
+                        searchResults.add(subscribers.get(x));
+                    }
+                }
+                for (int x = 0; x < searchResults.size(); x++) {
+                    JLabel name = new JLabel(searchResults.get(x).getFirstName() + " " + searchResults.get(x).getLastName() + ", ID: " + Integer.toString(searchResults.get(x).getSubscriberID()));
+                    results.add(name);
+                    JButton view = new JButton("View Subscriber Details");
+                    int finalX = searchResults.get(x).getSubscriberID()-1;
+                    view.addActionListener(e1 -> viewSubscriber(finalX));
+                    results.add(view);
+                }
+                results.revalidate();
+                results.repaint();
+            }
+        });
+    }
+
+    private static void viewSubscriber(int subNumber) {
+        JFrame viewSubscriber = new JFrame("Subscriber number: " + subscribers.get(subNumber).getSubscriberID());
         JPanel subPane = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 1;
         c.weighty = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
-        subWindow.add(subPane);
+        viewSubscriber.add(subPane);
         JLabel firstName = new JLabel("First Name: ");
         c.gridx = 0;
         c.gridy = 0;
@@ -24,7 +64,8 @@ public class AddSubscriber {
         c.gridwidth = 1;
         c.gridheight = 1;
         subPane.add(firstName, c);
-        JTextField primaryName = new JTextField();
+        JTextField primaryName = new JTextField(subscribers.get(subNumber).getFirstName());
+        primaryName.setEnabled(false);
         c.gridx = 1;
         c.weightx = 1;
         c.gridwidth = 2;
@@ -34,19 +75,20 @@ public class AddSubscriber {
         c.weightx = .25;
         c.gridwidth = 1;
         subPane.add(lastName, c);
-        JTextField surName = new JTextField();
+        JTextField surName = new JTextField(subscribers.get(subNumber).getLastName());
+        surName.setEnabled(false);
         c.gridx = 4;
         c.weightx = 1;
         c.gridwidth = 2;
         subPane.add(surName, c);
-
         JLabel phone = new JLabel("Phone Number: ");
         c.gridx = 0;
         c.gridy = 1;
         c.weightx = .25;
         c.gridwidth = 1;
         subPane.add(phone, c);
-        JTextField phoneNum = new JTextField();
+        JTextField phoneNum = new JTextField(subscribers.get(subNumber).getPhoneNumber());
+        phoneNum.setEnabled(false);
         c.gridx = 1;
         c.gridwidth = 5;
         c.weightx = 1;
@@ -57,7 +99,8 @@ public class AddSubscriber {
         c.weightx = .25;
         c.gridwidth = 1;
         subPane.add(address, c);
-        JTextField street = new JTextField();
+        JTextField street = new JTextField(subscribers.get(subNumber).getAddress());
+        street.setEnabled(false);
         c.gridx = 1;
         c.gridwidth = 5;
         c.weightx = 1;
@@ -68,7 +111,8 @@ public class AddSubscriber {
         c.weightx = .25;
         c.gridwidth = 1;
         subPane.add(city, c);
-        JTextField cityName = new JTextField();
+        JTextField cityName = new JTextField(subscribers.get(subNumber).getCity());
+        cityName.setEnabled(false);
         c.gridx = 1;
         c.weightx = 1;
         subPane.add(cityName, c);
@@ -76,7 +120,8 @@ public class AddSubscriber {
         c.gridx = 2;
         c.weightx = .25;
         subPane.add(state, c);
-        JTextField stateName = new JTextField();
+        JTextField stateName = new JTextField(subscribers.get(subNumber).getState());
+        stateName.setEnabled(false);
         c.gridx = 3;
         c.weightx = 1;
         subPane.add(stateName, c);
@@ -84,66 +129,74 @@ public class AddSubscriber {
         c.gridx = 4;
         c.weightx = .25;
         subPane.add(zip, c);
-        JTextField zipCode = new JTextField();
+        JTextField zipCode = new JTextField(subscribers.get(subNumber).getZipCode());
+        zipCode.setEnabled(false);
         c.gridx = 5;
         c.weightx = 1;
         subPane.add(zipCode, c);
-
-        JButton submit = new JButton("Submit");
-        submit.addActionListener(new ActionListener() {
+        JButton editSubscriber = new JButton("Edit subscriber");
+        JButton saveSubscriber = new JButton("Save changes");
+        saveSubscriber.setEnabled(false);
+        editSubscriber.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int x = subscriber.size();
-                subscriber.add(new Subscriber(primaryName.getText(), surName.getText(), phoneNum.getText(), street.getText(), cityName.getText(), stateName.getText(), zipCode.getText(), subscriber.size() + 1));
-                System.out.println(subscriber.size());
-                addServices(x);
-                subWindow.setVisible(false);
+                primaryName.setEnabled(true);
+                surName.setEnabled(true);
+                phoneNum.setEnabled(true);
+                street.setEnabled(true);
+                cityName.setEnabled(true);
+                stateName.setEnabled(true);
+                zipCode.setEnabled(true);
+                saveSubscriber.setEnabled(true);
             }
         });
         c.gridx = 0;
         c.gridy = 4;
-        c.gridwidth = 2;
-        subPane.add(submit, c);
-        JButton reset = new JButton("Reset");
-        reset.addActionListener(new ActionListener() {
+        subPane.add(editSubscriber, c);
+        saveSubscriber.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                primaryName.setText("");
-                surName.setText("");
-                phoneNum.setText("");
-                street.setText("");
-                stateName.setText("");
-                cityName.setText("");
-                zipCode.setText("");
+                subscribers.get(subNumber).setFirstName(primaryName.getText());
+                subscribers.get(subNumber).setLastName(surName.getText());
+                subscribers.get(subNumber).setPhoneNumber(phoneNum.getText());
+                subscribers.get(subNumber).setAddress(street.getText());
+                subscribers.get(subNumber).setCity(cityName.getText());
+                subscribers.get(subNumber).setState(stateName.getText());
+                subscribers.get(subNumber).setZipCode(zipCode.getText());
+                JOptionPane.showMessageDialog(null, "Subscriber information saved successfully");
+                viewSubscriber.setVisible(false);
+            }
+        });
+        c.gridx = 1;
+        subPane.add(saveSubscriber, c);
+        JButton editSubServices = new JButton("Edit Services");
+        editSubServices.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editServices(subNumber);
             }
         });
         c.gridx = 2;
-        subPane.add(reset, c);
-        JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(new ActionListener() {
+        subPane.add(editSubServices, c);
+        viewSubscriber.setBounds(400,25, 550, 200);
+        viewSubscriber.setVisible(true);
+        JButton save = new JButton("Save");
+        save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                subWindow.setVisible(false);
+                FileRetrieval.saveSubscriberFile(subscribers);
             }
         });
-        c.gridx = 4;
-        subPane.add(cancel, c);
-        int x = 550;
-        int y = 200;
-        subWindow.setBounds(25, 25, x, y);
-        subWindow.setVisible(true);
-        subWindow.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    public static void addServices(int subscriberNumber) {
-        JFrame services = new JFrame("Add subscriber services.");
+    public static void editServices(int subscriberNumber) {
+        JFrame services = new JFrame("Subscriber number: " + subscriberNumber + 1 + " services.");
         JPanel servicesPane = new JPanel(new GridLayout(3, 2));
         JPanel tvServices = new JPanel(new GridLayout(5, 1));
         JLabel tv = new JLabel("TV Options");
         tvServices.add(tv);
         JRadioButton noTV = new JRadioButton("No TV service");
         noTV.setActionCommand("0");
-        noTV.setSelected(true);
         JRadioButton basicTV = new JRadioButton("Basic TV - $39.99");
         basicTV.setActionCommand("1");
         JRadioButton plusTV = new JRadioButton("TV Plus - $59.99");
@@ -159,6 +212,19 @@ public class AddSubscriber {
         tvServices.add(basicTV);
         tvServices.add(plusTV);
         tvServices.add(premiumTV);
+        System.out.println(subscribers.get(subscriberNumber).getTv());
+        if (subscribers.get(subscriberNumber).getTv().equals("0")) {
+            noTV.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getTv().equals("1")){
+            basicTV.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getTv().equals("2")){
+            plusTV.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getTv().equals("3")){
+            premiumTV.setSelected(true);
+        }
 
         JPanel internet = new JPanel(new GridLayout(6, 1));
         JLabel internetOptions = new JLabel("Internet Options");
@@ -178,13 +244,27 @@ public class AddSubscriber {
         internetSelection.add(plusInternet);
         internetSelection.add(advancedInternet);
         internetSelection.add(gigabitInternet);
-        noInternet.setSelected(true);
         internet.add(internetOptions);
         internet.add(noInternet);
         internet.add(basicInternet);
         internet.add(plusInternet);
         internet.add(advancedInternet);
         internet.add(gigabitInternet);
+        if (subscribers.get(subscriberNumber).getInternet().equals("0")){
+            noInternet.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getInternet().equals("1")){
+            basicInternet.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getInternet().equals("2")){
+            plusInternet.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getInternet().equals("3")){
+            advancedInternet.setSelected(true);
+        }
+        else if (subscribers.get(subscriberNumber).getInternet().equals("4")){
+            gigabitInternet.setSelected(true);
+        }
 
         JPanel phone = new JPanel(new GridLayout(3, 1));
         JLabel phoneLabel = new JLabel("Phone: ");
@@ -196,6 +276,9 @@ public class AddSubscriber {
         phone.add(phoneLabel);
         phone.add(no);
         phone.add(yes);
+        if (subscribers.get(subscriberNumber).isTelephone()){
+            yes.setSelected(true);
+        }
 
         JPanel tvPremium = new JPanel(new GridLayout(4, 1));
         JLabel premiumPkgs = new JLabel("Premium TV Packages: ");
@@ -206,6 +289,18 @@ public class AddSubscriber {
         tvPremium.add(hbo);
         tvPremium.add(cmax);
         tvPremium.add(stars);
+        for (int x = 0; x < subscribers.get(subscriberNumber).getPremiumTVPackage().length(); x ++){
+            char premium = subscribers.get(subscriberNumber).getPremiumTVPackage().charAt(x);
+            if (premium == '1'){
+                hbo.setSelected(true);
+            }
+            else if (premium == '2'){
+                cmax.setSelected(true);
+            }
+            else if (premium == '3'){
+                stars.setSelected(true);
+            }
+        }
 
         JPanel cost = new JPanel(new GridLayout(4, 1));
         double sub = 0.00;
@@ -312,36 +407,37 @@ public class AddSubscriber {
                 premiumDiscount.setText("Premium channel discount: $" + String.format("%.2f", premiumdiscount));
                 total = subtotal - discount - premiumdiscount;
                 totalCost.setText("Total: $" + String.format("%.2f", total));
-                subscriber.get(subscriberNumber).setTotalCost(total);
+                subscribers.get(subscriberNumber).setTotalCost(total);
                 cost.repaint();
             }
         });
         buttons.add(updateCost);
 
-        JButton addServices = new JButton("Add subscriber services");
+        JButton addServices = new JButton("Edit subscriber services");
         addServices.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                subscriber.get(subscriberNumber).setTv(tvOptions.getSelection().getActionCommand());
-                subscriber.get(subscriberNumber).setInternet(internetSelection.getSelection().getActionCommand());
-                subscriber.get(subscriberNumber).setPremiumTVPackage("");
+                subscribers.get(subscriberNumber).setTv(tvOptions.getSelection().getActionCommand());
+                subscribers.get(subscriberNumber).setInternet(internetSelection.getSelection().getActionCommand());
+                subscribers.get(subscriberNumber).setPremiumTVPackage("");
                 if (yes.isSelected()) {
-                    subscriber.get(subscriberNumber).setTelephone(true);
+                    subscribers.get(subscriberNumber).setTelephone(true);
                 }
                 else {
-                    subscriber.get(subscriberNumber).setTelephone(false);
+                    subscribers.get(subscriberNumber).setTelephone(false);
                 }
                 if (hbo.isSelected()) {
-                    subscriber.get(subscriberNumber).setPremiumTVPackage(subscriber.get(subscriberNumber).getPremiumTVPackage().concat("1"));
+                    subscribers.get(subscriberNumber).setPremiumTVPackage(subscribers.get(subscriberNumber).getPremiumTVPackage().concat("1"));
                 }
                 if (cmax.isSelected()){
-                    subscriber.get(subscriberNumber).setPremiumTVPackage(subscriber.get(subscriberNumber).getPremiumTVPackage().concat("2"));
+                    subscribers.get(subscriberNumber).setPremiumTVPackage(subscribers.get(subscriberNumber).getPremiumTVPackage().concat("2"));
                 }
                 if (stars.isSelected()){
-                    subscriber.get(subscriberNumber).setPremiumTVPackage(subscriber.get(subscriberNumber).getPremiumTVPackage().concat("3"));
+                    subscribers.get(subscriberNumber).setPremiumTVPackage(subscribers.get(subscriberNumber).getPremiumTVPackage().concat("3"));
                 }
-                FileRetrieval.saveSubscriberFile(subscriber);
+                FileRetrieval.saveSubscriberFile(subscribers);
                 services.setVisible(false);
+                JOptionPane.showMessageDialog(null, "Services updated successfully.");
             }
         });
         buttons.add(addServices);

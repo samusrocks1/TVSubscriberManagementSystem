@@ -10,9 +10,15 @@ public class HomeScreen {
 
     private static void homeScreen() {
         JFrame mainWindow = new JFrame("Home Screen");
-        mainWindow.setLayout(new GridLayout(2,1));
+        mainWindow.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.weightx = 1;
+        c.weighty = 1;
         JLabel welcome = new JLabel("Welcome to the TV and Internet Subscriber Management System. Please use the options below to manage subscriber data.");
-        mainWindow.add(welcome);
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        mainWindow.add(welcome, c);
         JButton addSubscriber = new JButton("Add new customer");
         addSubscriber.addActionListener(new ActionListener() {
             @Override
@@ -20,7 +26,19 @@ public class HomeScreen {
                 AddSubscriber.subscriberWindow();
             }
         });
-        mainWindow.add(addSubscriber);
+        JButton viewSubscriber = new JButton("View/Edit Subscriber");
+        viewSubscriber.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                EditSubscriber.searchSubscriber();
+            }
+        });
+        c.gridwidth = 1;
+        c.gridx = 0;
+        c.gridy = 1;
+        mainWindow.add(addSubscriber, c);
+        c.gridx = 1;
+        mainWindow.add(viewSubscriber, c);
         mainWindow.setBounds(0, 0, 750, 500);
         mainWindow.setVisible(true);
         mainWindow.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
